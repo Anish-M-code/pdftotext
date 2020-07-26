@@ -1,8 +1,5 @@
 # PDFtoTEXT
 # Copyright (C) 2018-2021 M.Anish <aneesh25861@gmail.com>
-# Copyright (C) 2020-2021 Kavyan
-# Copyright (C) 2020-2021 Pranav
-# Copyright (C) 2020-2021 Hariram
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
