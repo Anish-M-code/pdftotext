@@ -23,6 +23,47 @@
 
 import os
 import subprocess
+import platform
+from sys import exit
+from time import sleep
+
+pkg=''
+
+# Detect if platform is using apt or dnf package manager.
+try:
+ subprocess.run(['apt','-v'],capture_output=True).stdout
+ pkg='apt'
+except Exception as e:
+  try:
+    subprocess.run(['dnf','--version'],capture_output=True).stdout
+    pkg='dnf'
+  except Exception as e:
+    print('Platform not supported!')  
+    sleep(3000)
+    exit(1)
+    
+if platform.system().lower() == 'windows':
+    print('Platform not supported!')
+    sleep(3000)
+    exit(1)
+    
+try:
+    x = subprocess.run(['tesseract','-v'],capture_output=True)
+except Exception as e:
+    print('Tesseract Not Found!\n Trying to Install it...')
+    if pkg == 'apt':
+       subprocess.run(['sudo','apt','update','&&','sudo','apt','install','tesseract-ocr']).stdout
+    elif pkg == 'dnf':
+       subprocess.run(['sudo','dnf','install','tesseract']).stdout
+
+try:
+    x = subprocess.run(['pdftocairo','-v'],capture_output=True)
+except Exception as e:
+    print('pdftocairo Not Found!\n Trying to Install it...')
+    if pkg == 'apt':
+       subprocess.run(['sudo','apt','update','&&','sudo','apt','install','poppler-utils']).stdout
+    elif pkg == 'dnf':
+       subprocess.run(['sudo','dnf','install','poppler-utils']).stdout
 
 #Loop to get names of all PDF files in current working Directory.
 for i in os.listdir():
@@ -38,17 +79,20 @@ for i in os.listdir():
      os.chdir(i+'_output')
      
      #Convert PDF file to PNG images using pdftocairo tool in poppler-utils.
+     print('Converting PDF file into PNGs...')
      x = subprocess.run(['pdftocairo',i,'-png'])
 
-  #Loop to get names of all PNG image files in current working directory.
-  for i in os.listdir():
-    if i[-3:].lower()=='png':
-  
-     #Pass the image to Tesseract ocr to recover text from images.
-     x = subprocess.run(['tesseract',i,i[:-3]])
+     #Loop to get names of all PNG image files in current working directory.
+     for i in os.listdir():
+       if i[-3:].lower()=='png':
+         print('Extracting Text from ',i)
+         #Pass the image to Tesseract ocr to recover text from images.
+         x = subprocess.run(['tesseract',i,i[:-3]],capture_output=True)
      
-     #Delete the image generated during Conversion of PDF to Text files.
-     os.remove(i)
-      
+         #Delete the image generated during Conversion of PDF to Text files.
+         os.remove(i)
+         
      #Return to current working Directory.
      os.chdir('..')
+     print('Cleaning up PNGs...')
+print('\nDone!')     
