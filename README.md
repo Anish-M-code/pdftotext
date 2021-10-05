@@ -20,7 +20,7 @@ Run the following commands in Linux terminal / Windows powershell / command prom
 ```
 pip install pdftotext3
 ```
-Then simply type the following command inside the folder/Directory to start converting PDF to text :- 
+Then simply type the following command inside the folder/Directory containing PDF Files to start converting PDF to text :- 
 
 ```
 pdftotext
