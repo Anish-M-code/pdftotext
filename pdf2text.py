@@ -39,12 +39,12 @@ except Exception as e:
     pkg='dnf'
   except Exception as e:
     print('Platform not supported!')  
-    sleep(3000)
+    sleep(5)
     exit(1)
     
 if platform.system().lower() == 'windows':
     print('Platform not supported!')
-    sleep(3000)
+    sleep(5)
     exit(1)
     
 try:
@@ -69,6 +69,7 @@ except Exception as e:
 for i in os.listdir():
   if i[-3:].lower() == 'pdf':
      
+     print('\nProcessing',i)
      #create an output folder.
      os.mkdir(i+'_output')
      
@@ -79,7 +80,7 @@ for i in os.listdir():
      os.chdir(i+'_output')
      
      #Convert PDF file to PNG images using pdftocairo tool in poppler-utils.
-     print('Converting PDF file into PNGs...')
+     print('\nConverting PDF file into PNGs...')
      x = subprocess.run(['pdftocairo',i,'-png'])
 
      #Loop to get names of all PNG image files in current working directory.
