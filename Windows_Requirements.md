@@ -21,4 +21,4 @@ Download Link: https://imagemagick.org/script/download.php#windows
 
 <img src="https://github.com/Anish-M-code/pdftotext/raw/master/screenshots/ghostscript.PNG">
 
-Download Link: https://www.ghostscript.com/download/gsdnld.html
+Download Link: https://ghostscript.com/releases/gsdnld.html
