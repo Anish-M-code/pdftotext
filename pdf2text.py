@@ -29,7 +29,7 @@ from time import sleep
 
 pkg=''
 
-# Detect if platform is using apt or dnf package manager.
+# Detect if platform is using apt or dnf or pacman package manager.
 try:
  subprocess.run(['apt','-v'],capture_output=True).stdout
  pkg='apt'
@@ -38,9 +38,13 @@ except Exception as e:
     subprocess.run(['dnf','--version'],capture_output=True).stdout
     pkg='dnf'
   except Exception as e:
-    print('Platform not supported!')  
-    sleep(5)
-    exit(1)
+    try:
+      subprocess.run(['pacman','--version'],capture_output=True).stdout
+      pkg='pacman'
+    except Exception as e:
+      print('Platform not supported!')  
+      sleep(5)
+      exit(1)
     
 if platform.system().lower() == 'windows':
     print('Platform not supported!')
@@ -55,6 +59,8 @@ except Exception as e:
        subprocess.run(['sudo','apt','update','&&','sudo','apt','install','tesseract-ocr']).stdout
     elif pkg == 'dnf':
        subprocess.run(['sudo','dnf','install','tesseract']).stdout
+    elif pkg == 'pacman':
+       subprocess.run(['sudo','pacman','-S','tesseract']).stdout
 
 try:
     x = subprocess.run(['pdftocairo','-v'],capture_output=True)
@@ -64,6 +70,8 @@ except Exception as e:
        subprocess.run(['sudo','apt','update','&&','sudo','apt','install','poppler-utils']).stdout
     elif pkg == 'dnf':
        subprocess.run(['sudo','dnf','install','poppler-utils']).stdout
+    elif pkg == 'pacman':
+       subprocess.run(['sudo','pacman','-S','poppler']).stdout
 
 #Loop to get names of all PDF files in current working Directory.
 for i in os.listdir():
