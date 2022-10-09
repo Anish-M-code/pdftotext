@@ -9,6 +9,7 @@ A simple Python script to convert PDF Documents to Text Files .
 * Ubuntu / Ubuntu Based Linux Distros
 * Fedora / Fedora Based Linux Distros
 * Arch Linux / Arch Linux Based Distros
+* Void Linux / Void Linux Based Distros
 * Windows 10 and above Windows Operating Systems.
 
 Quick Installation
