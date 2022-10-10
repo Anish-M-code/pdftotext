@@ -72,7 +72,7 @@ except Exception as e:
     elif pkg == 'pacman':
        subprocess.run(['sudo','pacman','-S','tesseract']).stdout
     elif pkg == 'xbps':
-       subprocess.run(['sudo','xbps-install','tesseract']).stdout
+       subprocess.run(['sudo','xbps-install',tesseract]).stdout
 
 
 try:
