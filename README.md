@@ -1,7 +1,7 @@
 # PDF TO TEXT CONVERTER
 A simple Python script to convert PDF Documents to Text Files .
 
-<img src="https://github.com/Anish-M-code/pdftotext/raw/master/screenshots/tool.png">
+<img src="https://user-images.githubusercontent.com/82881725/212544580-642779fb-03b6-475c-b11c-d90fcce7106d.png">
 
 ## Primary Supported Platforms
 
