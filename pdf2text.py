@@ -1,70 +1,69 @@
-# PDFtoTEXT
-# Copyright (c) 2022-2023 ANISH M < aneesh25861@gmail.com >
-
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
-
-''' This program converts all PDF files in current working directory to text Files.'''
-
 import os
 import subprocess
 import platform
-from sys import exit
+import sys
 from time import sleep
 
 pkg = ''
+tesseract = 'tesseract'
 
-# Detect if platform is using apt or dnf or pacman package manager.
+# Detect if platform is using apt, dnf, pacman, or xbps package manager.
 try:
     subprocess.run(['apt', '-v'], capture_output=True).stdout
     pkg = 'apt'
-except Exception as e:
+except Exception:
     try:
         subprocess.run(['dnf', '--version'], capture_output=True).stdout
         pkg = 'dnf'
-    except Exception as e:
+    except Exception:
         try:
             subprocess.run(['pacman', '--version'], capture_output=True).stdout
             pkg = 'pacman'
-        except Exception as e:
+        except Exception:
             try:
-                subprocess.run(['xbps-query', '-V'],
-                               capture_output=True).stdout
+                subprocess.run(['xbps-query', '-V'], capture_output=True).stdout
                 pkg = 'xbps'
             except:
                 print('Platform not supported!')
                 sleep(5)
-                exit(1)
+                sys.exit(1)
 
+# Check for Windows platform
 if platform.system().lower() == 'windows':
     print('Platform not supported!')
     sleep(5)
-    exit(1)
-
-tesseract = 'tesseract'
+    sys.exit(1)
 
 if pkg == 'xbps':
     tesseract = 'tesseract-ocr'
 
+# Function to install Tesseract language packs
+def install_language_pack(language):
+    print(f'Trying to install Tesseract language pack for {language}...')
+    if pkg == 'apt':
+        subprocess.run(['sudo', 'apt', 'install', f'tesseract-ocr-{language}']).stdout
+    elif pkg == 'dnf':
+        subprocess.run(['sudo', 'dnf', 'install', f'tesseract-langpack-{language}']).stdout
+    elif pkg == 'pacman':
+        subprocess.run(['sudo', 'pacman', '-S', f'tesseract-data-{language}']).stdout
+    elif pkg == 'xbps':
+        subprocess.run(['sudo', 'xbps-install', f'tesseract-ocr-{language}']).stdout
+
+# Function to check if the requested language is supported
+def check_language_supported(language):
+    supported_langs = subprocess.run([tesseract, '--list-langs'], capture_output=True, text=True).stdout.splitlines()
+    if language in supported_langs:
+        print(f'{language} is supported by Tesseract.')
+        return True
+    else:
+        print(f'{language} is not supported by Tesseract. Please check if the correct language pack is installed.')
+        return False
+
+# Install tesseract if not installed
 try:
-    x = subprocess.run([tesseract, '-v'], capture_output=True)
-except Exception as e:
-    print('Tesseract Not Found!\n Trying to Install it...')
+    subprocess.run([tesseract, '-v'], capture_output=True)
+except Exception:
+    print('Tesseract Not Found!\nTrying to Install it...')
     if pkg == 'apt':
         subprocess.run(['sudo', 'apt', 'update']).stdout
         subprocess.run(['sudo', 'apt', 'install', 'tesseract-ocr']).stdout
@@ -75,11 +74,11 @@ except Exception as e:
     elif pkg == 'xbps':
         subprocess.run(['sudo', 'xbps-install', tesseract]).stdout
 
-
+# Install pdftocairo if not installed
 try:
-    x = subprocess.run(['pdftocairo', '-v'], capture_output=True)
-except Exception as e:
-    print('pdftocairo Not Found!\n Trying to Install it...')
+    subprocess.run(['pdftocairo', '-v'], capture_output=True)
+except Exception:
+    print('pdftocairo Not Found!\nTrying to Install it...')
     if pkg == 'apt':
         subprocess.run(['sudo', 'apt', 'update']).stdout
         subprocess.run(['sudo', 'apt', 'install', 'poppler-utils']).stdout
@@ -90,36 +89,52 @@ except Exception as e:
     elif pkg == 'xbps':
         subprocess.run(['sudo', 'xbps-install', 'poppler-utils']).stdout
 
+# Get the optional language argument
+languages = 'eng'  # Default language is English
+
+if len(sys.argv) > 1:
+    languages = sys.argv[1]  # User can pass a comma-separated list of languages (e.g., 'eng+fra+spa')
+
+    # Split the languages and install/check each required language pack
+    lang_list = languages.split('+')
+    for lang in lang_list:
+        if not check_language_supported(lang):
+            install_language_pack(lang)
+            if not check_language_supported(lang):
+                print(f'Failed to install {lang}. Please install manually or check the package name.')
+                sys.exit(1)
 
 # Loop to get names of all PDF files in current working Directory.
-for i in os.listdir():
-    if i[-3:].lower() == 'pdf':
+for pdf_file in os.listdir():
+    if pdf_file.endswith('.pdf'):
 
-        print('\nProcessing', i)
+        print(f'\nProcessing {pdf_file}')
         # create an output folder.
-        os.mkdir(i+'_output')
+        output_folder = pdf_file + '_output'
+        os.mkdir(output_folder)
 
         # Move PDF file to output folder.
-        x = subprocess.run(['mv', i, i+'_output'])
+        subprocess.run(['mv', pdf_file, output_folder])
 
         # Change directory to output folder.
-        os.chdir(i+'_output')
+        os.chdir(output_folder)
 
         # Convert PDF file to PNG images using pdftocairo tool in poppler-utils.
-        print('\nConverting PDF file into PNGs...')
-        x = subprocess.run(['pdftocairo', i, '-png'])
+        print(f'\nConverting {pdf_file} into PNGs...')
+        subprocess.run(['pdftocairo', pdf_file, '-png'])
 
         # Loop to get names of all PNG image files in current working directory.
-        for i in os.listdir():
-            if i[-3:].lower() == 'png':
-                print('Extracting Text from ', i)
-                # Pass the image to Tesseract ocr to recover text from images.
-                x = subprocess.run([tesseract, i, i[:-3]], capture_output=True)
+        for image_file in os.listdir():
+            if image_file.endswith('.png'):
+                print(f'Extracting Text from {image_file}')
+                # Pass the image to Tesseract OCR to recover text from images with specified languages.
+                subprocess.run([tesseract, image_file, image_file[:-4], '-l', languages], capture_output=True)
 
                 # Delete the image generated during Conversion of PDF to Text files.
-                os.remove(i)
+                os.remove(image_file)
 
-        # Return to current working Directory.
+        # Return to current working directory.
         os.chdir('..')
         print('Cleaning up PNGs...')
+
 print('\nDone!')
